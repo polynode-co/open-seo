@@ -44,6 +44,28 @@ jobs:
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
           echo "Deploying every-app/open-seo@$ref" >> "$GITHUB_STEP_SUMMARY"
 
+      # Alchemy reports a refused Cloudflare call as a bare "Transport error",
+      # so check the token and account first and print what Cloudflare said.
+      - name: Check Cloudflare credentials
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          check() {
+            code=$(curl -s -o /tmp/cf.json -w '%{http_code}' -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/$1")
+            echo "$1 -> HTTP $code $(jq -c '[.errors[]?|{code,message}]' /tmp/cf.json)"
+            [ "$code" = 200 ]
+          }
+          ok=0
+          check user/tokens/verify || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/r2/buckets" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps" || ok=1
+          exit $ok
+
       - uses: actions/checkout@v4
         with:
           repository: every-app/open-seo
