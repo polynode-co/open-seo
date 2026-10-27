@@ -8,7 +8,8 @@
 # that fails leaves the live Worker as it was.
 #
 # Secrets:
-#   CLOUDFLARE_API_TOKEN   Workers, R2, KV, D1, Workflows and Access write
+#   CLOUDFLARE_API_TOKEN   edit on Workers Scripts, Workers KV, R2, D1, Access: Apps and
+#                          Policies, and Access: Organizations, Identity Providers, and Groups
 #   CLOUDFLARE_ACCOUNT_ID
 #   ENV_SELFHOST           the full contents of .env.selfhost
 name: Deploy self-hosted OpenSEO
@@ -64,6 +65,7 @@ jobs:
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" || ok=1
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" || ok=1
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/access/organizations" || ok=1
           exit $ok
 
       - uses: actions/checkout@v4
