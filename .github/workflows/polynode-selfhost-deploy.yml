@@ -9,7 +9,8 @@
 #
 # Secrets:
 #   CLOUDFLARE_API_TOKEN   edit on Workers Scripts, Workers KV, R2, D1, Access: Apps and
-#                          Policies, and Access: Organizations, Identity Providers, and Groups
+#                          Policies, Access: Organizations, Identity Providers, and Groups,
+#                          and Secrets Store (Alchemy's state store keeps its key there)
 #   CLOUDFLARE_ACCOUNT_ID
 #   ENV_SELFHOST           the full contents of .env.selfhost
 name: Deploy self-hosted OpenSEO
@@ -66,6 +67,7 @@ jobs:
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" || ok=1
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/access/apps" || ok=1
           check "accounts/$CLOUDFLARE_ACCOUNT_ID/access/organizations" || ok=1
+          check "accounts/$CLOUDFLARE_ACCOUNT_ID/secrets_store/stores" || ok=1
           exit $ok
 
       - uses: actions/checkout@v4
